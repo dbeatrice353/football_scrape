@@ -1,0 +1,5 @@
+# html files
+*.html
+
+# the error log
+error_log.txt
