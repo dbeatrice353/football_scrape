@@ -39,6 +39,19 @@ class FFTodayWebClient:
         with open(output_path,'w') as f:
             f.write(page)
 
+    def _download(self, request):
+        url = request.get_full_url()
+        try:
+            response = urllib2.urlopen(request)
+        except urllib2.HTTPError as e:
+            self._log_error(url,e)
+        except urllib2.URLError as e:
+            self._log_error(url,e)
+        else:
+            page = response.read()
+            self._save_page(page,url)
+
+
     def download_player_listings(self,delay=5,monitor=False):
         # Download the pages that list the player's names, and hyperlinks to their profiles.
         # The player listing pages are by position.
@@ -46,19 +59,9 @@ class FFTodayWebClient:
         for position in positions:
             url = self._make_player_listing_url(position)
             request = self._make_request(url)
-            try:
-                response = urllib2.urlopen(request)
-            except urllib2.HTTPError as e:
-                self._log_error(url,e)
-            except urllib2.URLError as e:
-                self._log_error(url,e)
-            else:
-                page = response.read()
-                self._save_page(page,url)
-
+            self._download(request)
             if monitor:
                 print url
-
             time.sleep(delay)
 
 if __name__ == "__main__":
