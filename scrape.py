@@ -29,7 +29,7 @@ class FFTodayWebClient:
         return self.base_url + '/stats/players?Pos=' + position
 
     def _make_error_string(self,url,exception):
-        return time.strftime('%Y-%m-%d %H:%M:%S') + '\t' + exception.reason + '\t' + url + '\n'
+        return time.strftime('%Y-%m-%d %H:%M:%S') + '\t' + str(exception.reason) + '\t' + url + '\n'
 
     def _log_error(self,url,e):
         with open(self.error_log_file,'a') as f:
@@ -68,7 +68,16 @@ class FFTodayWebClient:
             time.sleep(delay)
 
     def download_player_profiles(self,delay=5,monitor=False):
-        pass
+        scraper = Scraper()
+        names_and_urls = scraper.scrape_player_listings()
+        for record in names_and_urls:
+            url = self.base_url + record[1]
+            request = self._make_request(url)
+            self._download(request,self.player_profiles_dir)
+            if monitor:
+                print url
+            time.sleep(delay)
+
 
 
 class Scraper:
@@ -118,6 +127,5 @@ class Scraper:
 
 if __name__ == "__main__":
     #client = FFTodayWebClient()
-    #client.download_player_listings(delay=5,monitor=True)
-    #scraper = Scraper()
-    #players = scraper.scrape_player_listings()
+    #client.download_player_listings(delay=5,monitor=False)
+    #client.download_player_profiles(delay=3,monitor=True)
