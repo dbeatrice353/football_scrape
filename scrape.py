@@ -138,40 +138,89 @@ class Scraper:
         return player_listings
 
     def scrape_player_information(self,soup):
-        player_identifier = soup.title.text.split('-')[0] # position/name/team
+        # '\N' is the null-character for MySQL
+        null_character = '\N'
+        player_record = {'first_name':null_character,
+                         'last_name':null_character,
+                         'current_position':null_character,
+                         'current_team':null_character,
+                         'DOB':null_character,
+                         'age':null_character,
+                         'height':null_character,
+                         'weight':null_character,
+                         'draft':null_character,
+                         'college':null_character}
+        # some player info comes from in the title tag
+        try:
+            position_name_team = soup.title.text.replace('- FF Today','') # position/name/team
+            parts = position_name_team.split(' ')
+            player_record['current_position'] = parts[0]
+            player_record['first_name'] = parts[1]
+            player_record['last_name'] = parts[2]
+            player_record['current_team'] = position_name_team.split(',')[-1]
+        except IndexError as e:
+            print position_name_team
+            raise e
+        else:
+            pass
+        # Other player info comes from a poorly structured table further down the page.
         tables = soup.find_all('table')
         player_info = unicode(tables[7].td)
+        # get rid of some pesky html
         for each in ['<br/>','<td>','</td>','<td class="bodycontent"><strong>','</strong>']:
             player_info = player_info.replace(each,'')
         player_info = player_info.split('<strong>')
-        records = []
-        for record in player_info:
-            records.append([player_identifier]+record.split(':'))
-        # save records
-        output_path = os.path.join(self.scraped_player_info_dir,self.scraped_player_info_file)
-        with open(output_path,'a') as f:
-            for record in records:
-                string = '\t'.join(record)+'\n'
-                f.write(string.encode('utf-8'))
+        # include any fields that are available
+        for each in player_info:
+            field = each.split(':')
+            if 'DOB' in field[0]:
+                player_record['DOB'] = field[1]
+            if 'Age' in field[0]:
+                player_record['age'] = field[1]
+            if 'Ht' in field[0]:
+                player_record['height'] = field[1]
+            if 'Wt' in field[0]:
+                player_record['weight'] = field[1]
+            if 'College' in field[0]:
+                player_record['college'] = field[1]
+            if 'Draft' in field[0]:
+                player_record['draft'] = field[1]
+        # save the record
+        return player_record
 
     def scrape_player_profiles(self):
         self._check_if_player_profiles_dir_exists()
         self._check_if_scraped_player_info_dir_exists()
         files = os.listdir(self.player_profiles_dir)
+        player_records = []
+        i = 0
         for file in files:
+            # provide some output so we know its running
+            i += 1
+            if i % 50 == 0:
+                print i
+            # read the file
             path = os.path.join(self.player_profiles_dir,file)
             with open(path,'r') as f:
                 page = f.read().decode("utf8",errors='ignore')
+            # make the soup
             soup = BeautifulSoup(page,"lxml")
-            player_identifier = self.scrape_player_information(soup)
-            #if 'Season Stats' in page:
-            #    self.scrape_season_stats(page)
+            player_record = self.scrape_player_information(soup)
+            player_records.append(player_record)
+            if 'Season Stats' in page:
+                self.scrape_season_stats(page)
             #if '2012 Gamelog Stats' in page:
         #        self.scrape_gamelog_stats(page,'2012')
     #        if '2013 Gamelog Stats' in page:
 #                self.scrape_gamelog_stats(page,'2013')
     #        if '2014 Gamelog Stats' in page:
     #            self.scrape_gamelog_stats(page,'2014')
+        output_path = os.path.join(self.scraped_player_info_dir,self.scraped_player_info_file)
+        with open(output_path,'a') as f:
+            for record in player_records:
+                output_string = '\t'.join(record.values())+'\n'
+                f.write(output_string.encode('utf-8'))
+
 
 
 
