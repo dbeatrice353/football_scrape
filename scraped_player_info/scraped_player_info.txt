@@ -1,0 +1,80 @@
+QB Kellen Clemens, San Diego Chargers 	Draft	 2006 Round 2 (17)
+QB Kellen Clemens, San Diego Chargers 	College	 Oregon
+QB Kellen Clemens, San Diego Chargers 	Ht	 6’2”  
+QB Kellen Clemens, San Diego Chargers 	Wt	 220 
+QB Kellen Clemens, San Diego Chargers 	DOB	 1983-06-07 
+QB Kellen Clemens, San Diego Chargers 	Age	 32
+QB Matt Barkley, Philadelphia Eagles 	Draft	 2013 Round 4 (1)
+QB Matt Barkley, Philadelphia Eagles 	College	 Southern California
+QB Matt Barkley, Philadelphia Eagles 	Ht	 6’2”  
+QB Matt Barkley, Philadelphia Eagles 	Wt	 230 
+QB Matt Barkley, Philadelphia Eagles 	DOB	 1990-09-08 
+QB Matt Barkley, Philadelphia Eagles 	Age	 24
+QB Derek Carr, Oakland Raiders 	Draft	 2014 Round 2 (4)
+QB Derek Carr, Oakland Raiders 	College	 Fresno State
+QB Derek Carr, Oakland Raiders 	Ht	 6’2”  
+QB Derek Carr, Oakland Raiders 	Wt	 214 
+QB Derek Carr, Oakland Raiders 	DOB	 1991-03-28 
+QB Derek Carr, Oakland Raiders 	Age	 24
+QB Jimmy Clausen, Chicago Bears 	Draft	 2010 Round 2 (16)
+QB Jimmy Clausen, Chicago Bears 	College	 Notre Dame
+QB Jimmy Clausen, Chicago Bears 	Ht	 6’2”  
+QB Jimmy Clausen, Chicago Bears 	Wt	 222 
+QB Jimmy Clausen, Chicago Bears 	DOB	 1987-09-21 
+QB Jimmy Clausen, Chicago Bears 	Age	 27
+QB Teddy Bridgewater, Minnesota Vikings 	Draft	 2014 Round 1 (32)
+QB Teddy Bridgewater, Minnesota Vikings 	College	 Louisville
+QB Teddy Bridgewater, Minnesota Vikings 	Ht	 6’2”  
+QB Teddy Bridgewater, Minnesota Vikings 	Wt	 214 
+QB Teddy Bridgewater, Minnesota Vikings 	DOB	 1992-11-10 
+QB Teddy Bridgewater, Minnesota Vikings 	Age	 22
+QB Tyler Bray, Kansas City Chiefs 	College	 Tennessee
+QB Tyler Bray, Kansas City Chiefs 	Ht	 6’6”  
+QB Tyler Bray, Kansas City Chiefs 	Wt	 215 
+QB Tyler Bray, Kansas City Chiefs 	DOB	 1991-12-27 
+QB Tyler Bray, Kansas City Chiefs 	Age	 23
+QB Derek Anderson, Carolina Panthers 	Draft	 2005 Round 6 (39)
+QB Derek Anderson, Carolina Panthers 	College	 Oregon State
+QB Derek Anderson, Carolina Panthers 	Ht	 6’6”  
+QB Derek Anderson, Carolina Panthers 	Wt	 235 
+QB Derek Anderson, Carolina Panthers 	DOB	 1983-06-15 
+QB Derek Anderson, Carolina Panthers 	Age	 32
+QB Blake Bortles, Jacksonville Jaguars 	Draft	 2014 Round 1 (3)
+QB Blake Bortles, Jacksonville Jaguars 	College	 Central Florida
+QB Blake Bortles, Jacksonville Jaguars 	Ht	 6’5”  
+QB Blake Bortles, Jacksonville Jaguars 	Wt	 232 
+QB Blake Bortles, Jacksonville Jaguars 	DOB	 1991-12-16 
+QB Blake Bortles, Jacksonville Jaguars 	Age	 23
+QB Jason Campbell, Free Agent 	Draft	 2005 Round 1 (25)
+QB Jason Campbell, Free Agent 	College	 Auburn
+QB Jason Campbell, Free Agent 	Ht	 6’5”  
+QB Jason Campbell, Free Agent 	Wt	 230 
+QB Jason Campbell, Free Agent 	DOB	 1981-12-31 
+QB Jason Campbell, Free Agent 	Age	 33
+QB Sam Bradford, Philadelphia Eagles 	Draft	 2010 Round 1 (1)
+QB Sam Bradford, Philadelphia Eagles 	College	 Oklahoma
+QB Sam Bradford, Philadelphia Eagles 	Ht	 6’4”  
+QB Sam Bradford, Philadelphia Eagles 	Wt	 224 
+QB Sam Bradford, Philadelphia Eagles 	DOB	 1987-11-08 
+QB Sam Bradford, Philadelphia Eagles 	Age	 27
+QB Drew Brees, New Orleans Saints 	Draft	 2001 Round 2 (1)
+QB Drew Brees, New Orleans Saints 	College	 Purdue
+QB Drew Brees, New Orleans Saints 	DOB	 1979-01-15 
+QB Drew Brees, New Orleans Saints 	Age	 36
+QB Matt Cassel, Buffalo Bills 	Draft	 2005 Round 7 (16)
+QB Matt Cassel, Buffalo Bills 	Ht	 6’4”  
+QB Matt Cassel, Buffalo Bills 	Wt	 230 
+QB Matt Cassel, Buffalo Bills 	DOB	 1982-05-17 
+QB Matt Cassel, Buffalo Bills 	Age	 33
+QB Tajh Boyd, Free Agent 	Draft	 2014 Round 6 (37)
+QB Tajh Boyd, Free Agent 	College	 Clemson
+QB Tajh Boyd, Free Agent 	Ht	 6’1”  
+QB Tajh Boyd, Free Agent 	Wt	 222 
+QB Tajh Boyd, Free Agent 	DOB	 1990-09-25 
+QB Tajh Boyd, Free Agent 	Age	 24
+QB Tom Brady, New England Patriots 	Draft	 2000 Round 6 (33)
+QB Tom Brady, New England Patriots 	College	 Michigan
+QB Tom Brady, New England Patriots 	Ht	 6’4”  
+QB Tom Brady, New England Patriots 	Wt	 225 
+QB Tom Brady, New England Patriots 	DOB	 1977-08-03 
+QB Tom Brady, New England Patriots 	Age	 37

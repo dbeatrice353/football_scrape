@@ -6,6 +6,7 @@ import os
 
 PLAYER_LISTINGS_DIR = 'player_listings'
 PLAYER_PROFILES_DIR = 'player_profiles'
+SCRAPED_PLAYER_INFO = 'scraped_player_info'
 
 class FFTodayWebClient:
     def __init__(self):
@@ -71,23 +72,36 @@ class FFTodayWebClient:
         scraper = Scraper()
         names_and_urls = scraper.scrape_player_listings()
         for record in names_and_urls:
-            url = self.base_url + record[1]
-            request = self._make_request(url)
-            self._download(request,self.player_profiles_dir)
-            if monitor:
-                print url
-            time.sleep(delay)
-
-
+            #['QB','RB','WR','TE','K','DL','LB','DB']
+            if record[2] == 'QB':
+                url = self.base_url + record[1]
+                request = self._make_request(url)
+                self._download(request,self.player_profiles_dir)
+                if monitor:
+                    print url
+                time.sleep(delay)
 
 class Scraper:
     def __init__(self):
         self.player_listings_dir = PLAYER_LISTINGS_DIR
         self.player_profiles_dir = PLAYER_PROFILES_DIR
+        self.scraped_player_info_dir = SCRAPED_PLAYER_INFO
+        self.scraped_player_info_file = 'scraped_player_info.dat'
 
     def _check_if_player_listings_dir_exists(self):
         if not os.path.exists(self.player_listings_dir):
             raise Exception("The player listings directiory does not exit.")
+
+    def _check_if_player_profiles_dir_exists(self):
+        if not os.path.exists(self.player_profiles_dir):
+            raise Exception("The player profiles directiory does not exit.")
+
+    def _check_if_scraped_player_info_dir_exists(self):
+        if not os.path.exists(self.scraped_player_info_dir):
+            os.mkdir(self.scraped_player_info_dir)
+        # clear the file.
+        f = open(os.path.join(self.scraped_player_info_dir,self.scraped_player_info_file),'w')
+        f.close()
 
     def _extract_name(self,string):
         string = string.replace(',','')
@@ -125,7 +139,49 @@ class Scraper:
             player_listings += records
         return player_listings
 
+    def scrape_player_information(self,soup):
+        player_identifier = soup.title.text.split('-')[0] # position/name/team
+        tables = soup.find_all('table')
+        player_info = unicode(tables[7].td)
+        for each in ['<br/>','<td>','</td>','<td class="bodycontent"><strong>','</strong>']:
+            player_info = player_info.replace(each,'')
+        player_info = player_info.split('<strong>')
+        records = []
+        for record in player_info:
+            records.append([player_identifier]+record.split(':'))
+        # save records
+        output_path = os.path.join(self.scraped_player_info_dir,self.scraped_player_info_file)
+        with open(output_path,'a') as f:
+            for record in records:
+                string = '\t'.join(record)+'\n'
+                f.write(string.encode('utf-8'))
+
+    def scrape_player_profiles(self):
+        self._check_if_player_profiles_dir_exists()
+        self._check_if_scraped_player_info_dir_exists()
+        files = os.listdir(self.player_profiles_dir)
+        for file in files:
+            path = os.path.join(self.player_profiles_dir,file)
+            with open(path,'r') as f:
+                page = f.read().decode("utf8",errors='ignore')
+            soup = BeautifulSoup(page,"lxml")
+            player_identifier = self.scrape_player_information(soup)
+            #if 'Season Stats' in page:
+            #    self.scrape_season_stats(page)
+            #if '2012 Gamelog Stats' in page:
+        #        self.scrape_gamelog_stats(page,'2012')
+    #        if '2013 Gamelog Stats' in page:
+#                self.scrape_gamelog_stats(page,'2013')
+    #        if '2014 Gamelog Stats' in page:
+    #            self.scrape_gamelog_stats(page,'2014')
+
+
+
+
+
 if __name__ == "__main__":
     #client = FFTodayWebClient()
     #client.download_player_listings(delay=5,monitor=False)
     #client.download_player_profiles(delay=3,monitor=True)
+    scraper = Scraper()
+    data = scraper.scrape_player_profiles()
