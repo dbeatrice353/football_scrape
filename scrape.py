@@ -72,14 +72,12 @@ class FFTodayWebClient:
         scraper = Scraper()
         names_and_urls = scraper.scrape_player_listings()
         for record in names_and_urls:
-            #['QB','RB','WR','TE','K','DL','LB','DB']
-            if record[2] == 'QB':
-                url = self.base_url + record[1]
-                request = self._make_request(url)
-                self._download(request,self.player_profiles_dir)
-                if monitor:
-                    print url
-                time.sleep(delay)
+            url = self.base_url + record[1]
+            request = self._make_request(url)
+            self._download(request,self.player_profiles_dir)
+            if monitor:
+                print url
+            time.sleep(delay)
 
 class Scraper:
     def __init__(self):
