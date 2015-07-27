@@ -1,4 +1,13 @@
 
+"""
+The task of scraping football data from http://fftoday.com/ is split into
+two jobs - and subsequently, two classes:
+
+1) FFTodayWebClient: downloading and saving the html files
+2) Scraper: parsing the html files to extract the data
+
+"""
+
 from bs4 import BeautifulSoup
 import urllib2
 import time
@@ -9,6 +18,20 @@ PLAYER_PROFILES_DIR = 'player_profiles'
 SCRAPED_PLAYER_INFO = 'scraped_player_info'
 
 class FFTodayWebClient:
+    """
+    The FFTodayWebClient is used to download html pages containing useful data from http://fftoday.com/.
+    The class downloads two groups of files:
+
+    1) Files containing hyperlinks to player profiles
+        Downloading these files allows us to gather an exhaustive list of the players in the database,
+        as well as hyperlinks to each of their profiles.
+        METHOD: download_player_listings(self,delay=5,monitor=False)
+
+    2) Player profiles
+        The player profiles contain the personal info, performance stats, and game records of the
+        individual players.
+        METHOD: download_player_profiles(self,delay=5,monitor=False)
+    """
     def __init__(self):
         self.base_url = 'http://fftoday.com'
         self.player_listings_dir = PLAYER_LISTINGS_DIR
