@@ -86,6 +86,7 @@ class Scraper:
         self.scraped_player_info_dir = SCRAPED_PLAYER_INFO
         self.scraped_player_info_file = 'scraped_player_info.dat'
         self.scraped_season_stats_file = 'scraped_season_stats.dat'
+        self.scraped_gamelog_stats_file = 'scraped_gamelog_stats.dat'
 
     def _check_if_player_listings_dir_exists(self):
         if not os.path.exists(self.player_listings_dir):
@@ -99,8 +100,12 @@ class Scraper:
         if not os.path.exists(self.scraped_player_info_dir):
             os.mkdir(self.scraped_player_info_dir)
         # clear the file.
-        f = open(os.path.join(self.scraped_player_info_dir,self.scraped_player_info_file),'w')
-        f.close()
+
+    def _clear_output_files(self):
+        for file in [self.scraped_player_info_file, self.scraped_season_stats_file, self.scraped_gamelog_stats_file]:
+            path = os.path.join(self.scraped_player_info_dir,file)
+            f = open(path,'w')
+            f.close()
 
     def _extract_name(self,string):
         string = string.replace(',','')
@@ -203,7 +208,6 @@ class Scraper:
 
     def scrape_season_stats(self,soup,player_id):
         player_id = unicode(player_id)
-        tables = soup.find_all('table')
         # find the season stats table
         identifier_string = "Team"
         element_type = 'table'
@@ -227,9 +231,40 @@ class Scraper:
                     season_stat_records.append(record)
             return season_stat_records
 
+    def scrape_gamelog_stats(self,soup,year,player_id):
+        player_id = unicode(player_id)
+        identifier_string = year + ' Gamelog Stats'
+        element_type = 'table'
+        # this line finds the table that directly preceeds the one we want
+        table = self.find_lowest_element_containing_string(soup,element_type,identifier_string)
+        tables = soup.find_all('table')
+        index = tables.index(table)
+        # the gamelog table...
+        gl_table = tables[index + 1]
+        gamelog_records = []
+        rows = gl_table.find_all('tr')
+        # get the headers
+        headers_row = rows[2]
+        tds = headers_row.find_all('td')
+        headers = [td.text for td in tds]
+        # get the data
+        for row in rows[3:]:
+            tds = row.find_all('td')
+            stat_week = tds[0].text
+            stat_opponent = tds[1].text
+            stat_result = tds[2].text
+            for i in range(3,len(headers)): # skip season and team
+                stat_type = headers[i]
+                stat_value = tds[i].text
+                record = [player_id,stat_week,stat_opponent,stat_type,stat_value]
+                gamelog_records.append(record)
+        return gamelog_records
+
+
     def scrape_player_profiles(self):
         self._check_if_player_profiles_dir_exists()
         self._check_if_scraped_player_info_dir_exists()
+        self._clear_output_files()
         files = os.listdir(self.player_profiles_dir)
         player_records = []
         season_stats_records = []
@@ -240,6 +275,7 @@ class Scraper:
             i += 1
             if i % 50 == 0:
                 print i
+            player_id = i
             # read the file
             path = os.path.join(self.player_profiles_dir,file)
             with open(path,'r') as f:
@@ -247,19 +283,19 @@ class Scraper:
             # make the soup
             soup = BeautifulSoup(page,"lxml")
             # scrape
-            player_record = self.scrape_player_information(soup,i)
+            player_record = self.scrape_player_information(soup,player_id)
             player_records.append(player_record)
             if 'Season Stats' in page:
-                season_stats = self.scrape_season_stats(soup,i)
+                season_stats = self.scrape_season_stats(soup,player_id)
                 season_stats_records += season_stats
-            #if '2012 Gamelog Stats' in page:
-            #     self.scrape_gamelog_stats(page,'2012')
-            #if '2013 Gamelog Stats' in page:
-            #     self.scrape_gamelog_stats(page,'2013')
-            #if '2014 Gamelog Stats' in page:
-            #     self.scrape_gamelog_stats(page,'2014')
+            for year in ['2012','2013','2014','2015']:
+                if year + ' Gamelog Stats' in page:
+                    gamelog_stats = self.scrape_gamelog_stats(soup,year,player_id)
+                    gamelog_stats_records += gamelog_stats
+
         self.save_season_stats(season_stats_records)
         self.save_player_records(player_records)
+        self.save_gamelog_stats(gamelog_stats_records)
 
     def save_player_records(self,player_records):
         output_path = os.path.join(self.scraped_player_info_dir,self.scraped_player_info_file)
@@ -275,10 +311,12 @@ class Scraper:
                 output_string = '\t'.join(record)+'\n'
                 f.write(output_string.encode('utf-8'))
 
-
-
-
-
+    def save_gamelog_stats(self,gamelog_stats):
+        output_path = os.path.join(self.scraped_player_info_dir,self.scraped_gamelog_stats_file)
+        with open(output_path,'a') as f:
+            for record in gamelog_stats:
+                output_string = '\t'.join(record)+'\n'
+                f.write(output_string.encode('utf-8'))
 
 
 if __name__ == "__main__":
