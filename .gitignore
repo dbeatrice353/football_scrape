@@ -6,3 +6,6 @@
 
 # the error log
 error_log.txt
+
+# this script
+examine.py

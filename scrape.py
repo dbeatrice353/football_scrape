@@ -1,10 +1,11 @@
 
 """
 The task of scraping football data from http://fftoday.com/ is split into
-two jobs - and subsequently, two classes:
+three jobs - and subsequently, three classes:
 
 1) FFTodayWebClient: downloading and saving the html files
 2) Scraper: parsing the html files to extract the data
+3) Cleaner: clean up the data
 
 """
 
@@ -16,6 +17,11 @@ import os
 PLAYER_LISTINGS_DIR = 'player_listings'
 PLAYER_PROFILES_DIR = 'player_profiles'
 SCRAPED_PLAYER_INFO = 'scraped_player_info'
+
+SCRAPED_PLAYER_INFO_FILE = 'scraped_player_info.dat'
+SCRAPED_SEASON_STATS_FILE = 'scraped_season_stats.dat'
+SCRAPED_GAMELOG_STATS_FILE = 'scraped_gamelog_stats.dat'
+
 
 class FFTodayWebClient:
     """
@@ -107,9 +113,9 @@ class Scraper:
         self.player_listings_dir = PLAYER_LISTINGS_DIR
         self.player_profiles_dir = PLAYER_PROFILES_DIR
         self.scraped_player_info_dir = SCRAPED_PLAYER_INFO
-        self.scraped_player_info_file = 'scraped_player_info.dat'
-        self.scraped_season_stats_file = 'scraped_season_stats.dat'
-        self.scraped_gamelog_stats_file = 'scraped_gamelog_stats.dat'
+        self.scraped_player_info_file = SCRAPED_PLAYER_INFO_FILE
+        self.scraped_season_stats_file = SCRAPED_SEASON_STATS_FILE
+        self.scraped_gamelog_stats_file = SCRAPED_GAMELOG_STATS_FILE
 
     def _check_if_player_listings_dir_exists(self):
         if not os.path.exists(self.player_listings_dir):
@@ -186,7 +192,7 @@ class Scraper:
             parts = position_name_team.split(' ')
             player_record['current_position'] = parts[0]
             player_record['first_name'] = parts[1]
-            player_record['last_name'] = parts[2]
+            player_record['last_name'] = parts[2].replace(',','')
             player_record['current_team'] = position_name_team.split(',')[-1]
         except IndexError as e:
             print position_name_team
@@ -197,7 +203,7 @@ class Scraper:
         tables = soup.find_all('table')
         player_info = unicode(tables[7].td)
         # get rid of some pesky html
-        for each in ['<br/>','<td>','</td>','<td class="bodycontent"><strong>','</strong>']:
+        for each in ['<br/>','<td>','</td>','<td class="bodycontent"><strong>','</strong>','amp;']:
             player_info = player_info.replace(each,'')
         player_info = player_info.split('<strong>')
         # include any fields that are available
@@ -279,7 +285,7 @@ class Scraper:
             for i in range(3,len(headers)): # skip season and team
                 stat_type = headers[i]
                 stat_value = tds[i].text
-                record = [player_id,stat_week,stat_opponent,stat_type,stat_value]
+                record = [player_id,stat_week,stat_result,stat_opponent,stat_type,stat_value]
                 gamelog_records.append(record)
         return gamelog_records
 
@@ -342,9 +348,108 @@ class Scraper:
                 f.write(output_string.encode('utf-8'))
 
 
+class Cleaner:
+    def __init__(self):
+        self.null_character = '\N'
+        self.scraped_player_info_dir = SCRAPED_PLAYER_INFO
+        self.scraped_player_info_file = SCRAPED_PLAYER_INFO_FILE
+        self.scraped_season_stats_file = SCRAPED_SEASON_STATS_FILE
+        self.scraped_gamelog_stats_file = SCRAPED_GAMELOG_STATS_FILE
+
+    def is_numerical(self,string):
+        to_remove = ['-',',','.','%',' ']
+        for char in to_remove:
+            string = string.replace(char,'')
+        chars = list(string)
+        if len(chars) > 0:
+            for char in chars:
+                number = ord(char)
+                if number < 48 or number > 57:
+                    return False
+            return True
+        else:
+            return False
+
+    def is_percentage(self,string):
+        return '%' in string
+
+    def is_float(self,string):
+        return '.' in string and '%' not in string
+
+    def is_integer(self,string):
+        return '.' not in string and '%' not in string
+
+    def is_null(self,string):
+        string = string.strip()
+        string = string.replace('-','')
+        return string == ''
+
+    def clean_percentage(self,string):
+        for char in [',','%']:
+            string = string.replace(char,'')
+        return float(string)/100
+
+    def clean_float(self,string):
+        string = string.replace(',','')
+        return float(string)
+
+    def clean_integer(self,string):
+        string = string.replace(',','')
+        return int(string)
+
+    def get_data_in_lists(self,path):
+        with open(path,'r') as file:
+            content = file.read()
+            lines = [line.split('\t') for line in content.split('\n') if line != '']
+        return lines
+
+    def clean_stats_data(self,data):
+        for row_num in range(len(data)):
+            row = data[row_num]
+            for col_num in range(len(row)):
+                value = row[col_num]
+                if self.is_numerical(value):
+                    if self.is_percentage(value):
+                        data[row_num][col_num] = self.clean_percentage(value)
+                    elif self.is_float(value):
+                        data[row_num][col_num] = self.clean_float(value)
+                    elif self.is_integer(value):
+                        data[row_num][col_num] = self.clean_integer(value)
+                    else:
+                        pass
+                elif self.is_null(value):
+                    data[row_num][col_num] = self.null_character
+                else:
+                    pass
+        return data
+
+    def get_stat_file_paths(self):
+        paths = []
+        paths.append(os.path.join(self.scraped_player_info_dir,self.scraped_season_stats_file))
+        paths.append(os.path.join(self.scraped_player_info_dir,self.scraped_gamelog_stats_file))
+        return paths
+
+    def save_data(self,data,path):
+        output_string = '\n'.join(['\t'.join([str(val) for val in row]) for row in data]) # ha!
+        with open(path,'w') as f:
+            f.write(output_string)
+
+    def clean_data(self):
+        # clean the stats data...
+        for path in self.get_stat_file_paths():
+            dirty_data = self.get_data_in_lists(path)
+            clean_data = self.clean_stats_data(dirty_data)
+            self.save_data(clean_data,path)
+        # clean the player info data...
+
 if __name__ == "__main__":
-    #client = FFTodayWebClient()
-    #client.download_player_listings(delay=5,monitor=False)
-    #client.download_player_profiles(delay=3,monitor=True)
+    # download
+    client = FFTodayWebClient()
+    client.download_player_listings(delay=5,monitor=False)
+    client.download_player_profiles(delay=3,monitor=True)
+    # parse
     scraper = Scraper()
-    data = scraper.scrape_player_profiles()
+    scraper.scrape_player_profiles()
+    # clean
+    cleaner = Cleaner()
+    data = cleaner.clean_data()
