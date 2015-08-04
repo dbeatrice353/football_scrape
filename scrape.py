@@ -172,6 +172,34 @@ class Scraper:
             player_listings += records
         return player_listings
 
+    def parse_height(self,height):
+        # split up the unicode characters
+        parts = list(height)
+        integers = []
+        # try to make integers
+        for part in parts:
+            try:
+                integers.append(int(part))
+            except:
+                pass
+        if len(integers) == 0:
+            return ''
+
+        elif len(integers) == 1:
+            # feet to inches
+            return 12*integers[0]
+
+        elif len(integers) == 2:
+            # feet to inches + inches
+            return 12*integers[0] + integers[1]
+
+        elif len(integers) == 3:
+            # feet to inches + 10 * inches tens diget + inches ones diget
+            return 12*integers[0] + 10*integers[1] + integers[2]
+
+        else:
+            raise Exception("there's something wrong with this height:%s",height)
+
     def scrape_player_information(self,soup,player_id):
         # '\N' is the null-character for MySQL
         null_character = '\N'
@@ -214,7 +242,8 @@ class Scraper:
             if 'Age' in field[0]:
                 player_record['age'] = field[1]
             if 'Ht' in field[0]:
-                player_record['height'] = field[1]
+                inches = self.parse_height(field[1])
+                player_record['height'] = str(inches)
             if 'Wt' in field[0]:
                 player_record['weight'] = field[1]
             if 'College' in field[0]:
@@ -313,7 +342,7 @@ class Scraper:
             for i in range(3,len(headers)): # skip season and team
                 stat_type = headers[i]
                 stat_value = tds[i].text
-                record = [player_id,stat_week,stat_result,stat_opponent,stat_type,stat_value]
+                record = [player_id,year,stat_week,stat_result,stat_opponent,stat_type,stat_value]
                 gamelog_records.append(record)
         return gamelog_records
 
