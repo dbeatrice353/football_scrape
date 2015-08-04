@@ -280,10 +280,13 @@ class Scraper:
             except KeyError:
                 n = 1
             # we only want some of the super headers
-            if td.text in ['Rushing','Receiving']:
-                super_header = td.text + '_'
+            if td.text == 'Rushing':
+                super_header = 'Rush_'
+            elif td.text == 'Receiving':
+                super_headers = 'Rec_'
             else:
                 super_header = ''
+
             super_headers += [super_header for each in range(n)]
         # get the sub-headers
         sub_headers = [td.text for td in sub_headers_row.find_all('td')]
