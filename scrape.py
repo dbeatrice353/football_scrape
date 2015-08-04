@@ -283,7 +283,7 @@ class Scraper:
             if td.text == 'Rushing':
                 super_header = 'Rush_'
             elif td.text == 'Receiving':
-                super_headers = 'Rec_'
+                super_header = 'Rec_'
             else:
                 super_header = ''
 
@@ -505,14 +505,14 @@ class Cleaner:
 if __name__ == "__main__":
 
     ## download
-    #client = FFTodayWebClient()
-    #client.download_player_listings(delay=5,monitor=False)
-    #client.download_player_profiles(delay=3,monitor=True)
+    client = FFTodayWebClient()
+    client.download_player_listings(delay=5,monitor=False)
+    client.download_player_profiles(delay=3,monitor=True)
 
     ## parse
     scraper = Scraper()
-    data = scraper.scrape_player_profiles()
+    scraper.scrape_player_profiles()
 
     ## clean
-    #cleaner = Cleaner()
-    #data = cleaner.clean_data()
+    cleaner = Cleaner()
+    cleaner.clean_data()
