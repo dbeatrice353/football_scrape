@@ -235,10 +235,37 @@ class Scraper:
                     return element
         return None
 
+    def merge_column_headers_with_super_column_headers(self,table):
+        # get the header rows
+        rows = table.find_all('tr')
+        super_headers_row = rows[0]
+        sub_headers_row = rows[1]
+
+        # create super-header prefixes for the column names
+        super_header_tds = super_headers_row.find_all('td')
+        super_headers = []
+        for td in super_header_tds:
+            # get the column span of the super header
+            try:
+                n = int(td['colspan'])
+            except KeyError:
+                n = 1
+            # we only want some of the super headers
+            if td.text in ['Rushing','Receiving']:
+                super_header = td.text + '_'
+            else:
+                super_header = ''
+            super_headers += [super_header for each in range(n)]
+        # get the sub-headers
+        sub_headers = [td.text for td in sub_headers_row.find_all('td')]
+        # put them together
+        headers = [''.join(z) for z in zip(super_headers,sub_headers)]
+        return headers
+
     def scrape_season_stats(self,soup,player_id):
         player_id = unicode(player_id)
         # find the season stats table
-        identifier_string = "Team"
+        identifier_string = 'Team'
         element_type = 'table'
         table = self.find_lowest_element_containing_string(soup,element_type,identifier_string)
         if table:
@@ -247,7 +274,7 @@ class Scraper:
             # get the headers
             headers_row = rows[1]
             tds = headers_row.find_all('td')
-            headers = [td.text for td in tds]
+            headers = self.merge_column_headers_with_super_column_headers(table)
             # get the data
             for row in rows[2:]:
                 tds = row.find_all('td')
@@ -269,15 +296,16 @@ class Scraper:
         tables = soup.find_all('table')
         index = tables.index(table)
         # the gamelog table...
-        gl_table = tables[index + 1]
+        gl_outer_table = tables[index + 1]
+        # for some reason they nested tables here...
+        gl_table = gl_outer_table.find_all('table')[0]
+
         gamelog_records = []
         rows = gl_table.find_all('tr')
         # get the headers
-        headers_row = rows[2]
-        tds = headers_row.find_all('td')
-        headers = [td.text for td in tds]
+        headers = self.merge_column_headers_with_super_column_headers(gl_table)
         # get the data
-        for row in rows[3:]:
+        for row in rows[2:]:
             tds = row.find_all('td')
             stat_week = tds[0].text
             stat_opponent = tds[1].text
@@ -443,13 +471,16 @@ class Cleaner:
         # clean the player info data...
 
 if __name__ == "__main__":
-    # download
-    client = FFTodayWebClient()
-    client.download_player_listings(delay=5,monitor=False)
-    client.download_player_profiles(delay=3,monitor=True)
-    # parse
+
+    ## download
+    #client = FFTodayWebClient()
+    #client.download_player_listings(delay=5,monitor=False)
+    #client.download_player_profiles(delay=3,monitor=True)
+
+    ## parse
     scraper = Scraper()
-    scraper.scrape_player_profiles()
-    # clean
-    cleaner = Cleaner()
-    data = cleaner.clean_data()
+    data = scraper.scrape_player_profiles()
+
+    ## clean
+    #cleaner = Cleaner()
+    #data = cleaner.clean_data()
