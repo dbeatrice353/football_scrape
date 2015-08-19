@@ -1,9 +1,9 @@
 
 """
 The task of scraping football data from http://fftoday.com/ is split into
-three jobs - and subsequently, three classes:
+three jobs <=> three classes:
 
-1) FFTodayWebClient: downloading and saving the html files
+1) Downloader: download and save the html files
 2) Scraper: parsing the html files to extract the data
 3) Cleaner: clean up the data
 
@@ -23,9 +23,9 @@ SCRAPED_SEASON_STATS_FILE = 'scraped_season_stats.dat'
 SCRAPED_GAMELOG_STATS_FILE = 'scraped_gamelog_stats.dat'
 
 
-class FFTodayWebClient:
+class Downloader:
     """
-    The FFTodayWebClient is used to download html pages containing useful data from http://fftoday.com/.
+    The Downloader is used to download html pages containing useful data from http://fftoday.com/.
     The class downloads two groups of files:
 
     1) Files containing hyperlinks to player profiles
@@ -109,6 +109,15 @@ class FFTodayWebClient:
             time.sleep(delay)
 
 class Scraper:
+    """
+    The scrape_player_profiles method parses the html files in the directories found in these variables:
+
+    self.player_listings_dir
+    self.player_profiles_dir
+
+    ...and then prints the data to flat files.
+    That's pretty much it.
+    """
     def __init__(self):
         self.player_listings_dir = PLAYER_LISTINGS_DIR
         self.player_profiles_dir = PLAYER_PROFILES_DIR
@@ -119,11 +128,11 @@ class Scraper:
 
     def _check_if_player_listings_dir_exists(self):
         if not os.path.exists(self.player_listings_dir):
-            raise Exception("The player listings directiory does not exit.")
+            raise Exception("The player listings directiory does not exit. The Downloader's 'download_player_profiles' method should create that directory.")
 
     def _check_if_player_profiles_dir_exists(self):
         if not os.path.exists(self.player_profiles_dir):
-            raise Exception("The player profiles directiory does not exit.")
+            raise Exception("The player profiles directiory does not exit. The Downloader's 'download_player_profiles' method should create that directory.")
 
     def _check_if_scraped_player_info_dir_exists(self):
         if not os.path.exists(self.scraped_player_info_dir):
@@ -363,7 +372,7 @@ class Scraper:
             # provide some output so we know its running
             i += 1
             if i % 50 == 0:
-                print i
+                print "files scraped ",i
             player_id = i
             # read the file
             path = os.path.join(self.player_profiles_dir,file)
@@ -409,6 +418,14 @@ class Scraper:
 
 
 class Cleaner:
+    """
+    Cleaner's clean_data method cleans the data in the following directories:
+
+    self.scraped_season_stats
+    self.scraped_gamelog_stats
+
+    ...and saves the data to the same locations (it OVERWRITES the files).
+    """
     def __init__(self):
         self.null_character = '\N'
         self.scraped_player_info_dir = SCRAPED_PLAYER_INFO
@@ -457,7 +474,7 @@ class Cleaner:
         string = string.replace(',','')
         return int(string)
 
-    def get_data_in_lists(self,path):
+    def get_stats_data(self,path):
         with open(path,'r') as file:
             content = file.read()
             lines = [line.split('\t') for line in content.split('\n') if line != '']
@@ -497,7 +514,7 @@ class Cleaner:
     def clean_data(self):
         # clean the stats data...
         for path in self.get_stat_file_paths():
-            dirty_data = self.get_data_in_lists(path)
+            dirty_data = self.get_stats_data(path)
             clean_data = self.clean_stats_data(dirty_data)
             self.save_data(clean_data,path)
         # clean the player info data...
@@ -505,14 +522,18 @@ class Cleaner:
 if __name__ == "__main__":
 
     ## download
-    client = FFTodayWebClient()
-    client.download_player_listings(delay=5,monitor=False)
-    client.download_player_profiles(delay=3,monitor=True)
+    downloader = Downloader()
+    print "downloading player listings..."
+    downloader.download_player_listings(delay=3,monitor=True) # use a 3 second delay between http requests, and print the url so we have something to see.
+    print "downloading player profiles..."
+    downloader.download_player_profiles(delay=3,monitor=True)
 
     ## parse
+    print "scraping data from downloaded files..."
     scraper = Scraper()
     scraper.scrape_player_profiles()
 
     ## clean
+    print "cleaning up the data..."
     cleaner = Cleaner()
     cleaner.clean_data()
