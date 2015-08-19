@@ -520,6 +520,10 @@ class Cleaner:
         # clean the player info data...
 
 if __name__ == "__main__":
+    # NOTE ABOUT USAGE:
+    # Run the download portion of the script only once. Once you have the html files on your disk,
+    # comment the download portion out. You can scrape the local files multiple times to work out
+    # your scraping methods.
 
     ## download
     downloader = Downloader()
